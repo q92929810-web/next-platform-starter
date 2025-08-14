@@ -1,41 +1,62 @@
-# Next.js on Netlify Platform Starter
+# 루모라 타로 — 배포 템플릿 (Vercel/Netlify)
 
-[Live Demo](https://nextjs-platform-starter.netlify.app/)
+이 저장소는 **단일 HTML (index.html)** 로 구성된 정적 웹앱입니다.  
+아래 방법 중 하나로 바로 배포하세요.
 
-A modern starter based on Next.js 14 (App Router), Tailwind, and [Netlify Core Primitives](https://docs.netlify.com/core/overview/#develop) (Edge Functions, Image CDN, Blob Store).
+---
 
-In this site, Netlify Core Primitives are used both implictly for running Next.js features (e.g. Route Handlers, image optimization via `next/image`, and more) and also explicitly by the user code.
+## 🚀 가장 빠르게: Vercel CLI 무설정 배포 (추천)
+사전: Node.js, `npm i -g vercel`
 
-Implicit usage means you're using any Next.js functionality and everything "just works" when deployed - all the plumbing is done for you. Explicit usage is framework-agnostic and typically provides more features than what Next.js exposes.
+```bash
+# 1) 폴더로 이동
+cd path/to/this/folder
 
-## Deploying to Netlify
+# 2) 최초 1회만 로그인
+vercel login
 
-This site requires [Netlify Next Runtime v5](https://docs.netlify.com/frameworks/next-js/overview/) for full functionality. That version is now being gradually rolled out to all Netlify accounts.
-
-After deploying via the button below, please visit the **Site Overview** page for your new site to check whether it is already using the v5 runtime. If not, you'll be prompted to opt-in to to v5.
-
-[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/netlify-templates/next-platform-starter)
-
-## Developing Locally
-
-1. Clone this repository, then run `npm install` in its root directory.
-
-2. For the starter to have full functionality locally (e.g. edge functions, blob store), please ensure you have an up-to-date version of Netlify CLI. Run:
-
+# 3) 바로 배포 (프로젝트 자동 생성)
+vercel --prod --yes
 ```
-npm install netlify-cli@latest -g
-```
+- 완료되면 `https://xxxxx.vercel.app` 주소가 출력됩니다.
 
-3. Link your local repository to the deployed Netlify site. This will ensure you're using the same runtime version for both local development and your deployed site.
+> Windows PowerShell도 동일하게 실행 가능: `vercel --prod --yes`
 
-```
-netlify link
-```
+---
 
-4. Then, run the Next.js development server via Netlify CLI:
+## ☁️ Netlify CLI 배포
+사전: Node.js, `npm i -g netlify-cli`
 
+```bash
+cd path/to/this/folder
+netlify login
+netlify deploy --prod --dir .
 ```
-netlify dev
-```
+- 완료되면 `https://xxxxx.netlify.app` 주소가 출력됩니다.
 
-If your browser doesn't navigate to the site automatically, visit [localhost:8888](http://localhost:8888).
+---
+
+## 🐙 GitHub → Vercel 연동 (자동배포)
+1. 이 폴더 내용을 GitHub 새 저장소로 업로드 (예: `rumora-tarot`)
+2. [Vercel](https://vercel.com) → New Project → Import GitHub → 저장소 선택
+3. Framework: **Other/Static** (기본값) → **Deploy**
+4. 곧바로 영구 주소(`.vercel.app`) 발급
+
+---
+
+## 🔐 관리자 토큰
+- `admin123` 또는 `manager123` → "사이트 관리" 섹션에 입력하면 편집기능 노출
+
+## 🃏 카드 이미지 업로드 규칙 (자산관리)
+- 메이저: `major_0` ~ `major_21`
+- 슈트: `wands_ace|2..10|page|knight|queen|king`
+- `cups_*`, `swords_*`, `pentacles_*` 동일 규칙
+
+---
+
+### 부가 파일
+- `vercel.json` : 정적 호스팅 설정
+- `netlify.toml` : Netlify 정적 라우팅 설정
+- 스크립트: `deploy_vercel.sh`, `deploy_netlify.sh`, `deploy_vercel.ps1`, `deploy_netlify.ps1`
+
+MIT License

@@ -1,0 +1,652 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>루모라타로 · Full(Custom)</title>
+<style>
+
+:root {
+  --bg:#0a0c12; --fg:#f5f7fb; --line:#222633; --gold:#ffd54f;
+  --accent:#74d7c5; --accent2:#c6a7ff;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,Segoe UI,Roboto,Pretendard,sans-serif}
+a{color:inherit}
+.header{position:sticky;top:0;background:#0008;border-bottom:1px solid #ffffff22;display:flex;justify-content:space-between;align-items:center;padding:10px 12px;backdrop-filter:blur(8px);z-index:40}
+.header .logo{height:22px;border-radius:4px;margin-right:6px}
+.header .brand{font-weight:700}
+.btn{background:#111a;border:1px solid #ffffff3a;color:var(--fg);border-radius:12px;padding:10px 14px;cursor:pointer}
+.btn.primary{background:linear-gradient(90deg,var(--accent),var(--accent2));border:0;color:#111;font-weight:700}
+.btn.outline{background:transparent;border:1px solid #ffffff55}
+.btn.ghost{background:transparent;border:0}
+.container{max-width:1100px;margin:0 auto;padding:16px}
+.block{background:#ffffff0f;border:1px solid #ffffff22;border-radius:16px;padding:16px;margin:12px 0}
+.sub{opacity:.75;font-size:13px;margin-top:-4px;margin-bottom:8px}
+.grid{display:grid;gap:10px}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.col-span-2{grid-column:span 2}
+@media(max-width:900px){.g4,.g3,.g2{grid-template-columns:1fr}}
+label{display:flex;flex-direction:column;gap:6px;font-size:14px}
+input,select,textarea{background:#0c1018;border:1px solid #ffffff3a;color:var(--fg);border-radius:12px;padding:10px}
+textarea{resize:vertical}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.card{background:#00000033;border:1px solid #ffffff22;border-radius:12px;padding:12px}
+.badge{border:1px solid #ffffff44;border-radius:999px;padding:3px 8px;font-size:12px}
+.tiny-note{font-size:12px;opacity:.75}
+.tarot-frame{aspect-ratio:3/5;border:1px solid #ffffff33;border-radius:12px;display:grid;place-items:center;background:#121623;overflow:hidden}
+.footer{border-top:1px solid #ffffff22;padding:16px;text-align:center;font-size:12px;opacity:.8}
+/* Intro */
+.intro-mask{position:fixed;inset:0;background:#000;display:grid;place-items:center;z-index:60}
+.intro-box{background:#0f1320;border:1px solid #ffffff22;border-radius:16px;padding:20px;text-align:center;max-width:420px;width:92vw}
+.intro-box img{height:72px;border-radius:12px}
+.slogan{color:var(--gold);font-weight:600}
+/* Ribbon */
+.ribbon{position:fixed;left:50%;transform:translateX(-50%);bottom:10px;background:#000a;border:1px solid #ffffff22;border-radius:999px;padding:8px 14px;z-index:50;display:flex;gap:12px;align-items:center;font-size:14px}
+.ribbon a{text-decoration:underline}
+/* Picker */
+.picker-mask{position:fixed;inset:0;background:#000b;backdrop-filter:blur(4px);display:none;place-items:center;z-index:55}
+.picker-box{background:#0f1422;border:1px solid #ffffff22;border-radius:16px;max-width:980px;width:92vw;max-height:85vh;overflow:auto;padding:10px}
+.picker-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.picker-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+@media(max-width:900px){.picker-grid{grid-template-columns:repeat(3,1fr)}}
+.pcard{position:relative;aspect-ratio:3/5;border:1px solid #ffffff33;border-radius:12px;overflow:hidden;background:#0f1320;transform-style:preserve-3d;transition:transform .65s ease, box-shadow .65s ease}
+.pcard .face{position:absolute;inset:0;backface-visibility:hidden;display:grid;place-items:center}
+.pcard .front{transform:rotateY(180deg)}
+.pcard.flipped .front{transform:rotateY(0)}
+/* Assets */
+.drop{border:2px dashed #ffffff33;border-radius:14px;padding:14px;text-align:center;opacity:.9;background:#00000026;margin:8px 0}
+.drop.drag{background:#ffffff10;border-color:#ffd54f}
+.thumbs{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+@media(max-width:900px){.thumbs{grid-template-columns:repeat(3,1fr)}}
+.thumbs .tarot-frame img{width:100%;height:100%;object-fit:cover}
+/* Master card */
+.master{background:#ffffff10;border:1px solid #ffffff22;border-radius:12px;padding:10px;display:flex;gap:10px}
+.master .photo{width:72px;height:72px;border-radius:10px;overflow:hidden;background:#ffffff10;display:grid;place-items:center;flex:0 0 auto}
+.master .photo img{width:100%;height:100%;object-fit:cover}
+.links a{display:inline-flex;align-items:center;gap:6px;padding:6px 8px;border:1px solid #ffffff22;border-radius:8px}
+.links a.kakao{background:#FEE500;color:#111;font-weight:700}
+/* Admin */
+.admin-only{display:none}
+.role-admin .admin-only, .role-manager .admin-only{display:block}
+
+</style>
+</head>
+<body>
+<div id="intro" class="intro-mask">
+  <div class="intro-box">
+    <img id="introLogo" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPAAAAB4CAIAAABD1OhwAAABJElEQVR42u3WwQmAMAxAUSs9Rugy7j9Alyl0ATeQ4EG0vHdtT+ETUiLaBqvYjQBBg6BB0CBoBA2CBkGDoCGn3j/PPsyIrznOZkPj5IDFTo7Mkod3ZA5gGxonBwgaBA2CRtAgaBA0CBoEjaBB0CBoEDQIGkGDoEHQIGgQNIIGQYOgQdAgaAQNggZBg6BB0AgaBA2CBkGDoBE0CBoEDYJG0CBoEDQIGgSNoEHQIGgQNAgaQYOgQdAgaBA0ggZBg6BB0CBoBA2CBkGDoEHQCBoEDYIGQYOgETQIGgQNggZBI2gQNAgaBI2gQdAgaBA0CBpBg6BB0CBoEDSCBkGDoEHQIGgEDf9Tk/9mH4aFDQ2ChqdKRDMFbGgQNAgaBI2gQdAgaBA0JFweCQnz6f8gDQAAAABJRU5ErkJggg==" alt="루모라 로고"/>
+    <h2>루모라 타로</h2>
+    <p class="slogan">Complete your story</p>
+    <div class="row"><button id="startBtn" class="btn primary">시작하기</button></div>
+  </div>
+</div>
+
+<div class="ribbon"><span>상담 안내 · 1셔플 10,000원 · 학생 50% 5,000원</span> <a href="#reserve">예약하기</a></div>
+
+<header class="header">
+  <div class="left">
+    <button class="btn ghost" id="topBtn">Top</button>
+    <img id="logoImg" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPAAAAB4CAIAAABD1OhwAAABJElEQVR42u3WwQmAMAxAUSs9Rugy7j9Alyl0ATeQ4EG0vHdtT+ETUiLaBqvYjQBBg6BB0CBoBA2CBkGDoCGn3j/PPsyIrznOZkPj5IDFTo7Mkod3ZA5gGxonBwgaBA2CRtAgaBA0CBoEjaBB0CBoEDQIGkGDoEHQIGgQNIIGQYOgQdAgaAQNggZBg6BB0AgaBA2CBkGDoBE0CBoEDYJG0CBoEDQIGgSNoEHQIGgQNAgaQYOgQdAgaBA0ggZBg6BB0CBoBA2CBkGDoEHQCBoEDYIGQYOgETQIGgQNggZBI2gQNAgaBI2gQdAgaBA0CBpBg6BB0CBoEDSCBkGDoEHQIGgEDf9Tk/9mH4aFDQ2ChqdKRDMFbGgQNAgaBI2gQdAgaBA0JFweCQnz6f8gDQAAAABJRU5ErkJggg==" class="logo" alt="logo">
+    <span class="brand">루모라 타로</span>
+  </div>
+  <div class="right">
+    <select id="sfxType" title="사운드 종류"><option value="click">딸깍</option><option value="fan">펼침</option><option value="starlight">별빛</option></select>
+    <input id="sfxVol" type="range" min="0" max="100" value="45" title="볼륨">
+  </div>
+</header>
+
+<main class="container">
+  <section id="reserve" class="block">
+    <h3>예약하기</h3>
+    <p class="sub">날짜·시간·상담 방식 선택 → 가능한 마스터 자동 필터</p>
+    <div class="grid g4">
+      <label>날짜<input id="resDate" type="date"></label>
+      <label>시간<input id="resTime" type="time"></label>
+      <label>상담 방식
+        <select id="resMode"><option value="">전체</option><option>대면</option><option>전화</option><option>화상</option></select>
+      </label>
+      <label>마스터<select id="resMaster"></select></label>
+      <button id="resSubmit" class="btn primary">예약 제출</button>
+    </div>
+  </section>
+
+  <section id="today" class="block">
+    <h3>오늘의 타로 (메이저 1장)</h3>
+    <p class="sub">메이저 아르카나만 사용 · 해석 3줄 이상</p>
+    <div class="grid g3">
+      <div class="tarot-frame" id="todayCard">카드 미선택</div>
+      <div class="col-span-2">
+        <label>해석(자동)</label>
+        <textarea id="todayText" rows="6" readonly>카드를 선택하면 자동 해석이 표시됩니다.</textarea>
+        <div class="row"><button id="openToday" class="btn primary">카드 펼치기</button><button id="clearToday" class="btn outline">초기화</button></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="vip" class="block">
+    <h3>VIP 리딩 (78장 중 3장)</h3>
+    <p class="sub">질문 기반 · 카드당 2줄 이상 해석</p>
+    <label>질문<input id="vipQ" placeholder="예: 3개월 내 이직이 현명할까요?"></label>
+    <div class="row"><button id="openVip" class="btn primary">카드 펼치기</button><button id="clearVip" class="btn outline">초기화</button></div>
+    <div id="vipList" class="grid g3"></div>
+  </section>
+
+  <section id="events" class="block">
+    <h3>이벤트</h3>
+    <p class="sub">사진 첨부 + 내용 입력</p>
+    <div id="evEditor" class="card admin-only">
+      <div class="grid g2"><label>제목<input id="evTitle"></label><label>이미지<input id="evImg" type="file" accept="image/*"></label></div>
+      <label>내용<textarea id="evBody" rows="5"></textarea></label>
+      <div class="row"><button id="evAdd" class="btn">등록</button></div>
+    </div>
+    <div id="evList" class="grid g3"></div>
+  </section>
+
+  <section id="masters" class="block">
+    <h3>마스터 리더</h3>
+    <p class="sub">사진·이름·SNS·카톡(강조)·블로그·이메일·전화</p>
+    <div class="card admin-only">
+      <h4>리더 추가</h4>
+      <div class="grid g3">
+        <label>이름<input id="mName"></label>
+        <label>인스타<input id="mInsta" placeholder="https://instagram.com/..."></label>
+        <label>카카오톡<input id="mKakao" placeholder="https://pf.kakao.com/..."></label>
+        <label>블로그<input id="mBlog" placeholder="https://"></label>
+        <label>이메일<input id="mEmail" placeholder="mailto:me@example.com"></label>
+        <label>전화<input id="mPhone" placeholder="tel:+8210..."></label>
+        <label class="col-span-3">사진<input id="mPhoto" type="file" accept="image/*"></label>
+      </div>
+      <div class="row"><button id="mAdd" class="btn">추가</button></div>
+    </div>
+    <div class="row tiny-note admin-only">드래그로 순서를 바꾸면 즉시 저장됩니다.</div>
+    <div id="mWrap" class="grid g3 master-grid"></div>
+  </section>
+
+  <section id="certs" class="block">
+    <h3>자격증 사항</h3>
+    <p class="sub">금액은 상담으로 안내 · 신청 폼 + 파일 업로드 · 승인/거절</p>
+    <div class="grid g2">
+      <div class="card">
+        <h4>내용(편집 가능)</h4>
+        <label>응시 자격<textarea id="cQual" rows="4">심화과정 이수 및 출석 80% 이상 권장 시 응시 가능. 실습/윤리 교육 포함.</textarea></label>
+        <label>자격증 종류<textarea id="cKinds" rows="4">루모라 타로 마스터(블루)
+심리 상담사(교육 수료 시 발급, 시험 없음)</textarea></label>
+        <label>수수료<textarea id="cFees" rows="4">접수비: 종1 10,000원 / 종2 20,000원
+발급비: 타로 150,000원 / 심리 100,000원</textarea></label>
+      </div>
+      <div class="card">
+        <h4>자격증 신청</h4>
+        <div class="grid g2"><label>이름<input id="cName"></label><label>연락처<input id="cPhone"></label></div>
+        <label>증빙 파일<input id="cFile" type="file" accept="image/*,application/pdf"></label>
+        <div class="row"><button id="cSubmit" class="btn primary">신청 제출</button></div>
+      </div>
+    </div>
+    <div class="card admin-only">
+      <h4>신청 목록 (승인/거절)</h4>
+      <div id="cList" class="grid g2"></div>
+    </div>
+  </section>
+
+  <section id="edu" class="block">
+    <h3>타로 교육</h3>
+    <p class="sub">금액: 상담</p>
+    <div class="grid g2">
+      <label>기초<textarea id="eBasic" rows="4">카드 구조, 스프레드 기초, 해석 프레임 · 권장 4주</textarea></label>
+      <label>전문<textarea id="ePro" rows="4">실전 리딩, 윤리, 상담 스킬 · 권장 6주</textarea></label>
+      <label>심화<textarea id="eDeep" rows="4">패턴 읽기, 케이스 스터디 · 권장 8주</textarea></label>
+      <label>동행<textarea id="eCare" rows="4">케어 & 피드백 동행 · 탄력 운영</textarea></label>
+    </div>
+  </section>
+
+  <section id="assets" class="block">
+    <h3>자산관리</h3>
+    <p class="sub">이미지 일괄 업로드 → 규칙 자동 매핑 → 즉시 미리보기</p>
+    <div class="grid g2">
+      <div>
+        <div class="row">
+          <input id="aFiles" type="file" multiple accept="image/*">
+          <label class="field">카드 뒷면<input id="aBack" type="file" accept="image/*"></label>
+        </div>
+        <div id="aDrop" class="drop">여기로 이미지를 드래그 앤 드롭</div>
+        <div class="row">
+          <span class="badge">매핑된 카드 <b id="aCount">0</b>장</span>
+          <button id="aTest" class="btn outline">바로 보기(픽커 열기)</button>
+        </div>
+      </div>
+      <div id="aThumbs" class="thumbs"></div>
+    </div>
+  </section>
+
+  <section id="admin" class="block">
+    <h3>사이트 관리</h3>
+    <p class="sub">admin123 / manager123 토큰 입력 시 전체 수정 가능</p>
+    <div class="grid g3">
+      <label>권한 토큰<input id="authToken" placeholder="admin123 또는 manager123"></label>
+      <button id="authApply" class="btn">권한 적용</button>
+      <button id="authClear" class="btn outline">해제</button>
+      <label class="field">로고 업로드<input id="siteLogo" type="file" accept="image/*"></label>
+      <label class="field">배경 업로드<input id="siteBg" type="file" accept="image/*"></label>
+      <label>카카오 색상<input id="colorKakao" value="#FEE500"></label>
+      <label>인스타 색상<input id="colorInsta" value="#E46DA1"></label>
+      <label>블로그 색상<input id="colorBlog" value="#00C853"></label>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">© <span id="year"></span> 루모라 타로 · 반응형 웹앱 데모 · 역할: <span id="roleOut">viewer</span></footer>
+
+<div id="picker" class="picker-mask">
+  <div class="picker-box">
+    <div class="picker-head"><b id="pickerTitle">카드를 선택하세요</b><button id="pickerOk" class="btn primary">확정</button></div>
+    <div id="pickerGrid" class="picker-grid"></div>
+  </div>
+</div>
+
+<script>window.CARD_BACK_DEFAULT="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAEOCAIAAACviarCAAACBUlEQVR42u3WsQ2AIBBAUTGUV+BOjH07sYILGKUygbzXQnX5OSgR7YAnpxEgDsSBOBAH4kAciANxsLv6fpw5zGhvvV82B54VfntWZpYPK5r5MNgciANxIA7EgTgQB+JAHIgDcYA4EAfiQByIA3EgDsSBOBAHiANxIA7EgTgQB+JAHIgDcYA4EAfiQByIA3EgDsSBOBAH4gBxIA7EgTgQB+JAHIgDcSAOEAfiQByIA3EgDsSBOBAH4gBxIA7EgTgQB+JAHIgDcSAOxAHiQByIA3EgDsSBOBAH4kAcIA7EgTgQB+JAHIgDcSAOxAHiQByIA3EgDsSBOBAH4kAciAPEgTgQB+JAHIgDcSAOxIE4QByIA3EgDsSBOBAH4kAciAPEgTgQB+JAHIgDcSAOxIE4EAeIA3EgDsSBOBAH4kAciANxgDgQB+JAHIgDcSAOxIE4EAeIA3EgDsSBOBAH4kAciANxIA4QB+JAHIgDcSAOxIE4EAfiAHEgDsSBOBAH4kAciANxIA4QB+JAHIgDcSAOxIE4EAfiQBwgDsSBOBAH4kAciANxIA7EAeJAHIgDcSAOxIE4EAfiQBwgDsSBOBAH4kAciANxIA7EgTiMAHEgDsSBOBAH4kAciANxIA4QB+JAHIgDcSAO1lAn72UOw7I5QBx8KRHNFLA5EAfiQByIA3EgDsTB1m6dSgrYxueFhwAAAABJRU5ErkJggg==";</script>
+<script>
+
+/** =====================
+ *  CONFIG (손봄 포인트)
+ *  - 템플릿: {{card}}, {{question}} 변수 사용
+ *  - 효과: 느린 템포(편안) 기본, 강약/속도 수정 가능
+ *  - 사운드: 기본 "별빛", 볼륨 45
+ *  - 컬러: 배경/전경/포인트 조정
+ * ===================== */
+const CONFIG = {
+  templates: {
+    today: [
+      "오늘의 흐름은 {{card}} 카드가 비추는 방향성과 맞닿아 있습니다.",
+      "큰 결정보다는 작은 루틴을 다듬으면 운이 자연스럽게 붙습니다.",
+      "저녁 무렵, 내 안의 기준을 점검하면 컨디션이 확 달라집니다."
+    ],
+    vip: [
+      "{{question}} 관점에서 {{card}} 카드는 핵심 단서를 드러냅니다. 표면보다 패턴을 읽어보세요.",
+      "첫 반응보다 ‘두 번째 선택’을 준비하면 결과가 유리하게 전개됩니다."
+    ]
+  },
+  effects: {
+    flipDurationMs: 650,   // 플립 속도(느린 템포)
+    glowStrength: 0.28,    // 선택 시 글로우 강도(0~0.6 권장)
+    vibeMs: 28             // 진동 길이
+  },
+  sound: {
+    defaultType: "starlight", // "click" | "fan" | "starlight"
+    defaultVolume: 45          // 0~100
+  },
+  theme: {
+    kakao: "#FEE500",
+    insta: "#E46DA1",
+    blog:  "#00C853"
+  }
+};
+
+// ======= 공통 유틸 =======
+const LS = { save(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}, load(k,fb){try{const v=localStorage.getItem(k);return v?JSON.parse(v):fb}catch(e){return fb}};
+const el = s => document.querySelector(s);
+document.getElementById("year").textContent = new Date().getFullYear();
+const majorNames = ["0 바보","1 마법사","2 여사제","3 여황제","4 황제","5 교황","6 연인","7 전차","8 힘","9 은둔자","10 운명의 바퀴","11 정의","12 매달린 자","13 죽음","14 절제","15 악마","16 탑","17 별","18 달","19 태양","20 심판","21 세계"];
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function cardLabel(i){return i<22?majorNames[i]:`카드 #${i}`}
+function fillTemplate(lines, vars){ return lines.map(line => line.replace(/\{\{(\w+)\}\}/g, (_,k)=> vars[k] ?? "")).join("\n"); }
+
+// ======= 권한 =======
+let ROLE = LS.load("role","viewer");
+function setRole(r){ ROLE=r; document.body.classList.remove("role-viewer","role-manager","role-admin"); document.body.classList.add(`role-${r}`); el("#roleOut").textContent=r; LS.save("role",r); }
+setRole(ROLE);
+el("#authApply").addEventListener("click",()=>{
+  const t = el("#authToken").value.trim();
+  if (t==="admin123") setRole("admin");
+  else if (t==="manager123") setRole("manager");
+  else return alert("토큰이 올바르지 않습니다");
+  alert("권한이 적용되었습니다.");
+});
+el("#authClear").addEventListener("click",()=> setRole("viewer"));
+
+// ======= 로고/배경 =======
+function fileToDataURL(f){return new Promise(res=>{const rd=new FileReader();rd.onload=()=>res(String(rd.result));rd.readAsDataURL(f)})}
+let SITE_LOGO=LS.load("site-logo",null), SITE_BG=LS.load("site-bg",null);
+if (SITE_LOGO) el("#logoImg").src = SITE_LOGO;
+if (SITE_BG) document.body.style.backgroundImage = `url(${SITE_BG})`;
+el("#siteLogo").addEventListener("change",async e=>{const f=e.target.files?.[0];if(!f)return;const d=await fileToDataURL(f);LS.save("site-logo",d);el("#logoImg").src=d;});
+el("#siteBg").addEventListener("change",async e=>{const f=e.target.files?.[0];if(!f)return;const d=await fileToDataURL(f);LS.save("site-bg",d);document.body.style.backgroundImage=`url(${d})`;});
+
+// ======= 브랜드 색상 =======
+let COLOR_KAKAO=LS.load("color-kakao", CONFIG.theme.kakao);
+let COLOR_INSTA=LS.load("color-insta", CONFIG.theme.insta);
+let COLOR_BLOG = LS.load("color-blog",  CONFIG.theme.blog);
+["#colorKakao","#colorInsta","#colorBlog"].forEach(id=>{
+  el(id).value = id==="#colorKakao"?COLOR_KAKAO:id==="#colorInsta"?COLOR_INSTA:COLOR_BLOG;
+  el(id).addEventListener("input", e=>{
+    if(id==="#colorKakao"){ COLOR_KAKAO=e.target.value; LS.save("color-kakao",COLOR_KAKAO);}
+    else if(id==="#colorInsta"){ COLOR_INSTA=e.target.value; LS.save("color-insta",COLOR_INSTA);}
+    else { COLOR_BLOG=e.target.value; LS.save("color-blog",COLOR_BLOG);}
+    renderMasters();
+  });
+});
+
+// ======= 오디오/효과 =======
+let audioEnabled=false;
+el("#startBtn").addEventListener("click",()=>{ audioEnabled=true; el("#intro").style.display="none"; });
+el("#topBtn").addEventListener("click",()=> window.scrollTo({top:0, behavior:"smooth"}));
+el("#sfxType").value = LS.load("sfx-type", CONFIG.sound.defaultType);
+el("#sfxVol").value  = LS.load("sfx-vol",  CONFIG.sound.defaultVolume);
+["#sfxType","#sfxVol"].forEach(id=> el(id).addEventListener("change", e=> LS.save(id.slice(1), e.target.value)));
+
+function sfx(){
+  if(!audioEnabled) return;
+  try{
+    const ctx = new (window.AudioContext||window.webkitAudioContext)();
+    const g = ctx.createGain(); g.gain.value = (parseInt(el("#sfxVol").value,10)||CONFIG.sound.defaultVolume)/100 * 0.2; g.connect(ctx.destination);
+    const now = ctx.currentTime;
+    const type = el("#sfxType").value;
+    const o = ctx.createOscillator();
+    if (type==="click"){ o.type="square"; o.frequency.value=900; }
+    else if (type==="fan"){ o.type="sawtooth"; o.frequency.setValueAtTime(240, now); o.frequency.linearRampToValueAtTime(120, now+0.28); }
+    else { o.type="sine"; o.frequency.setValueAtTime(520, now); o.frequency.exponentialRampToValueAtTime(1280, now+0.42); }
+    o.connect(g); o.start(now); o.stop(now+0.38);
+  }catch(e){}
+}
+function vibe(){ if(navigator.vibrate) try{ navigator.vibrate(CONFIG.effects.vibeMs); }catch(e){} }
+function applyFx(node, on){
+  const dur = CONFIG.effects.flipDurationMs;
+  node.style.transition = `transform ${dur}ms ease, box-shadow ${dur}ms ease`;
+  const glow = CONFIG.effects.glowStrength;
+  if(on){ node.classList.add("flipped"); node.style.boxShadow = `0 10px 18px rgba(255,213,79,${glow})`; }
+  else  { node.classList.remove("flipped"); node.style.boxShadow = ""; }
+}
+
+// ======= 자산 업로드/매핑 =======
+const assets = LS.load("assets", {});
+function addAsset(key, data){ assets[key.toLowerCase()] = data; LS.save("assets", assets); renderAssets(); }
+function getByIndex(index){
+  const keyIdx = `card_${index}`;
+  if (assets[keyIdx]) return assets[keyIdx];
+  if (index<22){
+    const k1 = `major_${index}`;
+    const k2 = `major${String(index).padStart(2,'0')}`;
+    return assets[k1] || assets[k2];
+  }
+  const minorIndex = index-22; const suitIdx = Math.floor(minorIndex/14); const within = minorIndex%14;
+  const suitKey = ["wands","cups","swords","pentacles"][suitIdx];
+  const rankKeys = ["ace","2","3","4","5","6","7","8","9","10","page","knight","queen","king"];
+  const k1 = `${suitKey}_${rankKeys[within]}`;
+  const k2 = `${suitKey}${String(within+1).padStart(2,'0')}`;
+  return assets[k1] || assets[k2];
+}
+function inferIndexFromFilename(raw){
+  const name = raw.toLowerCase().replace(/\.[^.]+$/, "");
+  const mMajor = name.match(/^major[_-]?(\d{1,2})$/);
+  if (mMajor){ const n = parseInt(mMajor[1],10); if(n>=0&&n<=21) return n; }
+  const suitMatch = name.match(/^(wands|wand|cups|cup|swords|sword|pentacles|pentacle|coins|coin)[_-]?([a-z]+|\d{2})(\d{2})?$/);
+  if (suitMatch){
+    const suitRaw = suitMatch[1];
+    const suitIdx = suitRaw.startsWith("wand")?0 : suitRaw.startsWith("cup")?1 : suitRaw.startsWith("sword")?2 : 3;
+    const rankRaw = suitMatch[2];
+    const rankMap = { ace:0, page:10, knight:11, queen:12, king:13 };
+    let within = -1;
+    if (/^\d{2}$/.test(rankRaw)){
+      const n=parseInt(rankRaw,10);
+      if (n===1) within=0; else if(n>=2&&n<=10) within=n-1; else if(n===11) within=10; else if(n===12) within=11; else if(n===13) within=12; else if(n===14) within=13;
+    } else {
+      within = rankMap[rankRaw] ?? (Number.isFinite(parseInt(rankRaw,10))? (parseInt(rankRaw,10)-1) : -1);
+    }
+    if (within>=0 && within<=13) return 22 + suitIdx*14 + within;
+  }
+  return null;
+}
+function renderAssets(){
+  const cont = el("#aThumbs");
+  const keys = Object.keys(assets);
+  const grid = keys.slice(0,120).map(k=>`<div class="tarot-frame" title="${k}"><img src="${assets[k]}"></div>`).join("");
+  cont.innerHTML = grid || `<div class="tiny-note">업로드된 이미지가 없습니다.</div>`;
+  const count = keys.filter(k=>k.startsWith("card_")).length;
+  el("#aCount").textContent = String(count);
+}
+el("#aFiles").addEventListener("change", e=> handleFiles(e.target.files));
+el("#aBack").addEventListener("change", async e=>{ const f=e.target.files?.[0]; if(!f) return; const d=await fileToDataURL(f); LS.save("card-back", d); });
+const dz = el("#aDrop");
+["dragenter","dragover","dragleave","drop"].forEach(ev=> dz.addEventListener(ev, e=>{ e.preventDefault(); e.stopPropagation(); }));
+["dragenter","dragover"].forEach(ev=> dz.addEventListener(ev, ()=> dz.classList.add("drag")));
+["dragleave","drop"].forEach(ev=> dz.addEventListener(ev, ()=> dz.classList.remove("drag")));
+dz.addEventListener("drop", e=> handleFiles(e.dataTransfer.files));
+function handleFiles(list){
+  Array.from(list || []).forEach(f=>{
+    const rd = new FileReader();
+    rd.onload = ()=>{
+      const data = String(rd.result);
+      const idx = inferIndexFromFilename(f.name);
+      if (idx!==null) addAsset(`card_${idx}`, data);
+      addAsset(f.name.replace(/\.[^.]+$/,""), data);
+    };
+    rd.readAsDataURL(f);
+  });
+}
+el("#aTest").addEventListener("click", ()=>{
+  const pool = [...Array(78)].map((_,i)=>i).filter(i=>getByIndex(i));
+  if (pool.length===0){ alert("먼저 카드 이미지를 업로드하세요."); return; }
+  picker.onDone = (ids)=> alert("선택된 카드: "+ids.join(", "));
+  picker.open(pool.slice(0,48), Math.min(3, pool.length), "업로드 이미지 테스트");
+});
+
+// ======= 카드 픽커 =======
+const picker = {
+  wrap: el("#picker"), grid: el("#pickerGrid"), title: el("#pickerTitle"), ok: el("#pickerOk"),
+  maxPick: 1, picked: [], pool: [], onDone: (ids)=>{},
+  open(pool, maxPick, title){
+    this.pool = shuffle(pool.slice()); this.maxPick = maxPick; this.picked = [];
+    this.title.textContent = title || "카드를 선택하세요";
+    this.grid.innerHTML = "";
+    const back = LS.load("card-back", window.CARD_BACK_DEFAULT);
+    this.pool.forEach(id=>{
+      const cell = document.createElement("div"); cell.className="pcard"; cell.dataset.id=String(id);
+      const front = getByIndex(id);
+      cell.innerHTML = `
+        <div class="face back">${back? `<img src="${back}" style="width:100%;height:100%;object-fit:cover">` : ""}</div>
+        <div class="face front">${front? `<img src="${front}" style="width:100%;height:100%;object-fit:cover">` : `<div style="font-size:12px;opacity:.8;display:grid;place-items:center;height:100%">${cardLabel(id)}</div>`}</div>
+      `;
+      cell.addEventListener("click", ()=>{
+        sfx(); vibe();
+        const on = !cell.classList.contains("flipped");
+        if (on){
+          if (this.picked.length>=this.maxPick) return;
+          this.picked.push(id);
+          applyFx(cell, true);
+        } else {
+          this.picked = this.picked.filter(x=>x!==id);
+          applyFx(cell, false);
+        }
+      });
+      this.grid.appendChild(cell);
+    });
+    this.wrap.style.display = "grid";
+  }
+};
+picker.ok.addEventListener("click", ()=>{ picker.wrap.style.display="none"; picker.onDone(picker.picked); });
+
+// ======= 오늘의 타로 =======
+el("#openToday").addEventListener("click", ()=>{
+  picker.onDone = (ids)=>{
+    const id = ids[0]; if(id==null) return;
+    const lines = CONFIG.templates.today;
+    const text = fillTemplate(lines, { card: cardLabel(id) });
+    el("#todayCard").innerHTML = `<div style="padding:8px;text-align:center">${cardLabel(id)}</div>`;
+    el("#todayText").value = text;
+  };
+  picker.open([...Array(22)].map((_,i)=>i), 1, "오늘의 타로: 메이저 22장 중 1장");
+});
+el("#clearToday").addEventListener("click", ()=>{
+  el("#todayCard").textContent = "카드 미선택";
+  el("#todayText").value = "카드를 선택하면 자동 해석이 표시됩니다.";
+});
+
+// ======= VIP 리딩 =======
+el("#openVip").addEventListener("click", ()=>{
+  picker.onDone = (ids)=>{
+    const q = el("#vipQ").value || "";
+    const box = el("#vipList"); box.innerHTML = "";
+    ids.forEach((id, i)=>{
+      const text = fillTemplate(CONFIG.templates.vip, { card: cardLabel(id), question: q });
+      const div = document.createElement("div");
+      div.className = "card";
+      div.innerHTML = `<b>#${i+1} · ${cardLabel(id)}</b>
+      <div class="tarot-frame" style="margin-top:6px;display:grid;place-items:center;opacity:.9">이미지 없음</div>
+      <textarea rows="3" readonly>${text}</textarea>`;
+      box.appendChild(div);
+    });
+  };
+  picker.open([...Array(78)].map((_,i)=>i), 3, "VIP: 78장 중 3장");
+});
+el("#clearVip").addEventListener("click", ()=> el("#vipList").innerHTML = "");
+
+// ======= 이벤트 =======
+const events = LS.load("events", []);
+function renderEvents(){
+  const wrap = el("#evList");
+  wrap.innerHTML = events.map(ev=>`
+    <div class="card">
+      ${ev.img? `<img src="${ev.img}" style="width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:8px">`:""}
+      <h4>${ev.title||"(제목)"}</h4>
+      <p style="white-space:pre-wrap">${ev.body||""}</p>
+    </div>
+  `).join("") || `<div class="tiny-note">등록된 이벤트가 없습니다.</div>`;
+}
+renderEvents();
+el("#evAdd").addEventListener("click", async ()=>{
+  const t=el("#evTitle").value.trim(); const b=el("#evBody").value.trim(); const f=el("#evImg").files?.[0];
+  if (!t && !b){ alert("제목 또는 내용을 입력하세요."); return; }
+  if (f){ const d=await fileToDataURL(f); events.unshift({ id:crypto.randomUUID(), title:t, body:b, img:d }); }
+  else { events.unshift({ id:crypto.randomUUID(), title:t, body:b }); }
+  LS.save("events", events); renderEvents(); el("#evTitle").value=""; el("#evBody").value=""; el("#evImg").value="";
+});
+
+// ======= 마스터 =======
+let masters = LS.load("masters", [
+  { id:"m1", name:"루모라", modes:["대면","전화"], sns:"", kakao:"", blog:"", email:"", phone:"", photo:null },
+  { id:"m2", name:"하루",   modes:["전화","화상"], sns:"", kakao:"", blog:"", email:"", phone:"", photo:null },
+  { id:"m3", name:"이루자", modes:["대면","화상"], sns:"", kakao:"", blog:"", email:"", phone:"", photo:null },
+]);
+function renderMasters(){
+  const wrap = el("#mWrap"); wrap.innerHTML = "";
+  masters.forEach((m, idx)=>{
+    const card = document.createElement("div"); card.className = "master"; card.draggable = (ROLE!=="viewer"); card.dataset.id = m.id;
+    card.innerHTML = `
+      <div class="photo">${m.photo? `<img src="${m.photo}">` : "<span>사진</span>"}</div>
+      <div style="flex:1">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <b>${m.name}</b><span class="tiny-note">금액: 상담</span>
+        </div>
+        <div class="links" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px">
+          ${m.sns? `<a href="${m.sns}" target="_blank" style="color:${COLOR_INSTA}">인스타</a>`:""}
+          ${m.blog? `<a href="${m.blog}" target="_blank" style="color:${COLOR_BLOG}">블로그</a>`:""}
+          ${m.kakao? `<a class="kakao" href="${m.kakao}" target="_blank" style="background:${COLOR_KAKAO};color:#111">카톡</a>`:""}
+          ${m.email? `<a href="${m.email}">이메일</a>`:""}
+          ${m.phone? `<a href="${m.phone}">전화</a>`:""}
+        </div>
+        <div class="admin-only row" style="margin-top:6px">
+          <button class="btn outline edit">수정</button>
+          <button class="btn outline del">삭제</button>
+        </div>
+      </div>
+    `;
+    // drag reorder
+    card.addEventListener("dragstart", e=>{ e.dataTransfer.setData("text/plain", m.id); });
+    card.addEventListener("dragover", e=> e.preventDefault());
+    card.addEventListener("drop", e=>{
+      e.preventDefault();
+      const fromId = e.dataTransfer.getData("text/plain");
+      const fromIdx = masters.findIndex(x=>x.id===fromId);
+      const toIdx = idx;
+      if (fromIdx<0) return;
+      const [moved] = masters.splice(fromIdx,1);
+      masters.splice(toIdx,0,moved);
+      LS.save("masters", masters); renderMasters();
+    });
+    // edit
+    card.querySelector(".edit").addEventListener("click", async ()=>{
+      const name = prompt("이름", m.name)||m.name;
+      const sns  = prompt("인스타 URL", m.sns||"")||m.sns;
+      const kakao= prompt("카카오 URL", m.kakao||"")||m.kakao;
+      const blog = prompt("블로그 URL", m.blog||"")||m.blog;
+      const email= prompt("이메일 mailto:", m.email||"")||m.email;
+      const phone= prompt("전화 tel:", m.phone||"")||m.phone;
+      masters[idx] = {...m, name,sns,kakao,blog,email,phone};
+      LS.save("masters", masters); renderMasters();
+    });
+    // delete
+    card.querySelector(".del").addEventListener("click", ()=>{
+      if (!confirm("삭제하시겠어요?")) return;
+      masters = masters.filter(x=>x.id!==m.id);
+      LS.save("masters", masters); renderMasters();
+    });
+    wrap.appendChild(card);
+  });
+  renderResMasters();
+}
+renderMasters();
+
+// add master
+el("#mAdd").addEventListener("click", async ()=>{
+  const name = el("#mName").value.trim(); if (!name) return alert("이름을 입력하세요");
+  const sns  = el("#mInsta").value.trim(); const kakao=el("#mKakao").value.trim();
+  const blog = el("#mBlog").value.trim();  const email=el("#mEmail").value.trim();
+  const phone= el("#mPhone").value.trim();
+  let photo = null; const f = el("#mPhoto").files?.[0];
+  if (f) photo = await fileToDataURL(f);
+  masters.push({ id:crypto.randomUUID(), name, modes:["대면","전화","화상"], sns,kakao,blog,email,phone, photo });
+  ["#mName","#mInsta","#mKakao","#mBlog","#mEmail","#mPhone"].forEach(id=> el(id).value=""); el("#mPhoto").value="";
+  LS.save("masters", masters); renderMasters();
+});
+
+// ======= 예약 =======
+function renderResMasters(){
+  const select = el("#resMaster"); const mode = el("#resMode").value;
+  const list = masters.filter(m=> !mode || (m.modes||[]).includes(mode));
+  select.innerHTML = list.map(m=> `<option value="${m.id}">${m.name}</option>`).join("");
+}
+el("#resMode").addEventListener("change", renderResMasters);
+el("#resSubmit").addEventListener("click", ()=>{
+  const mId = el("#resMaster").value || "";
+  const m = masters.find(x=>x.id===mId);
+  alert(`예약 접수: ${el("#resDate").value} ${el("#resTime").value} · ${m?m.name:"(미지정)"}`);
+});
+
+// ======= 자격증 신청/승인 =======
+const certApps = LS.load("certApps", []);
+function renderCertApps(){
+  const box = el("#cList");
+  box.innerHTML = certApps.map(app=>`
+    <div class="card">
+      <b>${app.name}</b> <span class="tiny-note">${app.phone}</span>
+      ${app.file? `<div class="tiny-note" style="margin-top:6px">첨부 있음</div>`:""}
+      <div class="row" style="margin-top:8px">
+        <button data-id="${app.id}" class="btn approve">승인</button>
+        <button data-id="${app.id}" class="btn outline deny">거절</button>
+      </div>
+    </div>
+  `).join("") || `<div class="tiny-note">신청 없음</div>`;
+  box.querySelectorAll(".approve").forEach(b=> b.addEventListener("click", e=>{ const id=e.target.getAttribute("data-id"); updateCert(id,"승인"); }));
+  box.querySelectorAll(".deny").forEach(b=> b.addEventListener("click", e=>{ const id=e.target.getAttribute("data-id"); updateCert(id,"거절"); }));
+}
+function updateCert(id, status){
+  const i = certApps.findIndex(x=>x.id===id); if (i<0) return;
+  certApps[i].status = status; LS.save("certApps", certApps); renderCertApps();
+}
+renderCertApps();
+el("#cSubmit").addEventListener("click", async ()=>{
+  const name = el("#cName").value.trim(); const phone = el("#cPhone").value.trim();
+  let file = null; const f = el("#cFile").files?.[0]; if (f) file = await fileToDataURL(f);
+  if (!name || !phone) return alert("이름/연락처를 입력하세요.");
+  certApps.unshift({ id:crypto.randomUUID(), name, phone, file, status:"대기" });
+  LS.save("certApps", certApps); renderCertApps();
+  el("#cName").value=""; el("#cPhone").value=""; el("#cFile").value="";
+});
+
+// ======= 초기 렌더 =======
+renderAssets();
+
+</script>
+</body>
+</html>
