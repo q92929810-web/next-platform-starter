@@ -1,0 +1,17 @@
+[build]
+  publish = "public"
+  command = ""
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Rumora Tarot - Public Template (Netlify)
+Publish directory: public
+Build command: (none)
+
+Steps:
+1) Upload this folder to GitHub (optional).
+2) Netlify -> Add new site -> Import or Deploy manually.
+3) Set Publish directory to "public" and leave build command empty.
